@@ -12,7 +12,7 @@ export default function App() {
     formData.append("upload_preset", "unsigned"); // ⚠️ استبدلها من Cloudinary
     formData.append("cloud_name", "dovqci8ka");       // ⚠️ استبدلها من Cloudinary
 
-    const res = await fetch("https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/image/upload", {
+    const res = await fetch("https://api.cloudinary.com/v1_1/dovqci8ka/image/upload", {
       method: "POST",
       body: formData,
     });
