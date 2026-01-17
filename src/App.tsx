@@ -30,7 +30,7 @@ export default function App() {
     try {
       const imageUrl = await uploadToCloudinary(file);
 
-      await fetch("https://malshatti.app.n8n.cloud/webhook/social-media-post", {
+      await fetch("https://malshatti.app.n8n.cloud/webhook-test/social-media-post", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
