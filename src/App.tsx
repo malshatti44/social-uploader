@@ -11,8 +11,8 @@ function App() {
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', 'unsigned'); // ✏️ اكتب اسم الـ Upload Preset اللي أنشأته
-    formData.append('folder', 'social-posts'); // مجلد داخل Cloudinary
+    formData.append('upload_preset', 'unsigned'); // اسم الـ preset اللي أنشأناه
+    formData.append('folder', 'social-posts');
 
     const res = await fetch('https://api.cloudinary.com/v1_1/dovqci8ka/image/upload', {
       method: 'POST',
@@ -24,24 +24,29 @@ function App() {
   };
 
   return (
-    <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
-      <h2>نشر صورة مع كابشن</h2>
+    <div style={{ padding: '2rem', fontFamily: 'sans-serif', maxWidth: 600, margin: '0 auto' }}>
+      <h2>📤 ارفع صورة مع كابشن</h2>
 
-      <input type="file" accept="image/*" onChange={e => {
-        const file = e.target.files?.[0];
-        if (file) {
-          setFile(file);
-          setPreview(URL.createObjectURL(file));
-        }
-      }} />
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            setFile(file);
+            setPreview(URL.createObjectURL(file));
+          }
+        }}
+      />
 
-      {preview && <img src={preview} alt="preview" style={{ width: 200, marginTop: 10 }} />}
+      {preview && <img src={preview} alt="preview" style={{ width: '100%', marginTop: 10 }} />}
 
       <textarea
         placeholder="اكتب الكابشن هنا"
         value={caption}
-        onChange={e => setCaption(e.target.value)}
+        onChange={(e) => setCaption(e.target.value)}
         style={{ width: '100%', marginTop: 10 }}
+        rows={3}
       />
 
       <button onClick={handleUpload} style={{ marginTop: 10 }}>
@@ -50,7 +55,7 @@ function App() {
 
       {uploadedUrl && (
         <div style={{ marginTop: 20 }}>
-          <p>تم رفع الصورة بنجاح:</p>
+          <p>✅ تم رفع الصورة بنجاح:</p>
           <a href={uploadedUrl} target="_blank" rel="noopener noreferrer">{uploadedUrl}</a>
         </div>
       )}
