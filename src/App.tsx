@@ -1,66 +1,86 @@
-import { useState } from 'react';
+import { useState } from "react";
 
-function App() {
+export default function App() {
+  const [caption, setCaption] = useState("");
   const [file, setFile] = useState<File | null>(null);
-  const [caption, setCaption] = useState('');
-  const [preview, setPreview] = useState('');
-  const [uploadedUrl, setUploadedUrl] = useState('');
+  const [status, setStatus] = useState("");
 
-  const handleUpload = async () => {
-    if (!file) return;
-
+  // Cloudinary upload
+  const uploadToCloudinary = async (file: File): Promise<string> => {
     const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', 'unsigned'); // اسم الـ preset اللي أنشأناه
-    formData.append('folder', 'social-posts');
+    formData.append("file", file);
+    formData.append("upload_preset", "YOUR_UPLOAD_PRESET"); // ⚠️ استبدلها من Cloudinary
+    formData.append("cloud_name", "YOUR_CLOUD_NAME");       // ⚠️ استبدلها من Cloudinary
 
-    const res = await fetch('https://api.cloudinary.com/v1_1/dovqci8ka/image/upload', {
-      method: 'POST',
+    const res = await fetch("https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/image/upload", {
+      method: "POST",
       body: formData,
     });
 
     const data = await res.json();
-    setUploadedUrl(data.secure_url);
+    return data.secure_url; // الرابط النهائي للصورة
+  };
+
+  // Send to n8n Webhook
+  const handleSubmit = async () => {
+    if (!file || !caption) return alert("الرجاء رفع صورة وكتابة تعليق");
+
+    setStatus("جاري الرفع...");
+
+    try {
+      const imageUrl = await uploadToCloudinary(file);
+
+      await fetch("https://malshatti.app.n8n.cloud/webhook/social-media-post", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          instagram_post_image: imageUrl,
+          instagram_story_image: imageUrl,
+          tiktok_image: imageUrl,
+          snapchat_image: imageUrl,
+          instagram_caption: caption,
+          instagram_story_caption: caption,
+          tiktok_caption: caption,
+          snapchat_caption: caption,
+        }),
+      });
+
+      setStatus("✅ تم إرسال البيانات بنجاح!");
+      setCaption("");
+      setFile(null);
+    } catch (err) {
+      console.error(err);
+      setStatus("❌ حدث خطأ أثناء الإرسال");
+    }
   };
 
   return (
-    <div style={{ padding: '2rem', fontFamily: 'sans-serif', maxWidth: 600, margin: '0 auto' }}>
-      <h2>📤 ارفع صورة مع كابشن</h2>
+    <div style={{ maxWidth: 500, margin: "50px auto", textAlign: "center" }}>
+      <h2>نشر صورة وتعليق</h2>
 
       <input
         type="file"
         accept="image/*"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) {
-            setFile(file);
-            setPreview(URL.createObjectURL(file));
-          }
-        }}
+        onChange={(e) => setFile(e.target.files?.[0] || null)}
       />
-
-      {preview && <img src={preview} alt="preview" style={{ width: '100%', marginTop: 10 }} />}
+      <br /><br />
 
       <textarea
-        placeholder="اكتب الكابشن هنا"
+        rows={4}
+        placeholder="اكتب الكابشن هنا..."
         value={caption}
         onChange={(e) => setCaption(e.target.value)}
-        style={{ width: '100%', marginTop: 10 }}
-        rows={3}
+        style={{ width: "100%" }}
       />
+      <br /><br />
 
-      <button onClick={handleUpload} style={{ marginTop: 10 }}>
-        رفع الصورة
+      <button onClick={handleSubmit} style={{ padding: "10px 20px" }}>
+        إرسال
       </button>
 
-      {uploadedUrl && (
-        <div style={{ marginTop: 20 }}>
-          <p>✅ تم رفع الصورة بنجاح:</p>
-          <a href={uploadedUrl} target="_blank" rel="noopener noreferrer">{uploadedUrl}</a>
-        </div>
-      )}
+      <p>{status}</p>
     </div>
   );
 }
-
-export default App;
